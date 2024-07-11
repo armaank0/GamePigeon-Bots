@@ -1,10 +1,10 @@
-#**Hello! These are some fun tools built with the Arduino Mouse and Keyboard libraries.**
+### **Hello! These are some fun tools built with the Arduino Mouse and Keyboard libraries.**
 
 ***Requirements:***
 One ATmega32u4 or SAMD board connected to laptop, another connected to phone, communicate to each other via nRF24L01 modules.
 Upload the appropriate .ino code and check that the port name matches at the top of .py program.
 
-***General Fun:***
+## ***General Fun:***
 
 **track.py** - Basic program that relays touchpad moves, clicks, and scrolls as well as keyboard input to the phone
 > USAGE: Start the python program, cursor will automatically move to the center of the screen on both phone and laptop. (Adjust screen dimensions if necessary)
@@ -15,7 +15,7 @@ Upload the appropriate .ino code and check that the port name matches at the top
 **trashy_drawing_replicator.py** -> Use this to push saved drawings to be replicated on the phone
 > USAGE: Start the python program, use arrow keys to adjust cursor on phone screen, press '/' then type the drawing file name and press ENTER to draw.
 
-***GamePigeon assists:***
+## ***GamePigeon assists:***
 
 **wordhunt.py** - Automatically finds and inputs all Word Hunt answers
 > USAGE: Open the Word Hunt game and start the Python program. If the starting cursor is not aligned in the top left box, enter 'm' to reposition until it looks good. Enter the 16 letters on the board with spaces to separate each row.

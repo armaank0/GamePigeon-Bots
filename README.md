@@ -27,5 +27,4 @@ Upload the appropriate .ino code and check that the port name matches at the top
 > USAGE: Open the Darts game and start the Python program. If the starting cursor is not aligned in the center of the moving dart, enter 'm' to reposition until it looks good. Write the intended point value you want to score and press ENTER when you see the tip of the moving dart just touch the bottom of the circular board.
 
 ## Enjoy and have fun!!
-
-## Taliyah ^_^
+~ Taliyah ^_^

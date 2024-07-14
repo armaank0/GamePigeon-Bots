@@ -1,4 +1,5 @@
 # **Hello! These are some fun tools built with the Arduino Mouse and Keyboard libraries.**
+Watch this vid: https://youtu.be/3ex0ym1oMgs
 
 ***Requirements:***
 One ATmega32u4 or SAMD board connected to laptop, another connected to phone, communicate to each other via nRF24L01 modules.

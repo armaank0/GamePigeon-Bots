@@ -1,5 +1,9 @@
 import json
+import serial
+import time
 
+# Check that the port name matches
+s = serial.Serial(port='/dev/cu.usbmodemHIDGD1', baudrate=115200, timeout=0.1)
 
 class WordHunt:
     def __init__(self, board: list):
@@ -99,8 +103,78 @@ class WordHunt:
         return word
 
 
+current = 0
 if __name__ == "__main__":
-    map = 'ihvl saan gbuc relr'
-    map = "".join(map.split())
-    board1 = WordHunt(list(map))
-    print(board1.sorted)
+    s.write(bytes('w,26/31\n', 'utf-8'))
+    s.write(bytes('n\n', 'utf-8'))
+
+    while True:
+        command = input("Enter 'm' to re-position or the 4 rows of letters with the format 'abcd efgh ijkl mnop': ")
+        if command == 'm':
+            s.write(bytes('w,26/31\n', 'utf-8'))
+            s.write(bytes('n\n', 'utf-8'))
+        elif len(command) == 19:
+            map = "".join(command.split())
+            board1 = WordHunt(list(map))
+
+            curr = 0
+            br_moves = 0
+            bl_moves = 0
+            tr_moves = 0
+            tl_moves = 0
+            for word in board1.sorted:
+                index = 0
+                for letter in board1.answers[word]:
+                    x = (letter % 4) - (curr % 4)
+                    y = (letter // 4) - (curr // 4)
+                    if abs(x) >= 2 or y == 0:
+                        for i in range(abs(x)):
+                            s.write(bytes('m,' + str((x/abs(x)) * 47) + '/' + '0' + '\n', 'utf-8'))
+                            time.sleep(0.03)
+                        if abs(y) == 1:
+                            s.write(bytes('m,' + '0' + '/' + str(((y/abs(y)) * 47)) + '\n', 'utf-8'))
+                            time.sleep(0.03)
+                    if abs(y) >= 2 or x == 0:
+                        for i in range(abs(y)):
+                            s.write(bytes('m,' + '0' + '/' + str(((y/abs(y)) * 47)) + '\n', 'utf-8'))
+                            time.sleep(0.03)
+                        if abs(x) == 1:
+                            s.write(bytes('m,' + str((x/abs(x)) * 47) + '/' + '0' + '\n', 'utf-8'))
+                            time.sleep(0.03)
+                    if abs(x) == 1 and abs(y) == 1:
+                        s.write(bytes('m,' + str((x/abs(x)) * 42) + '/' + str(((y/abs(y)) * 42)) + '\n', 'utf-8'))
+                        time.sleep(0.03)
+                        if x/abs(x) == 1 and y/abs(y) == 1:
+                            br_moves += 1
+                        elif x/abs(x) == -1 and y/abs(y) == 1:
+                            bl_moves += 1
+                        elif x/abs(x) == 1 and y/abs(y) == -1:
+                            tr_moves += 1
+                        elif x/abs(x) == -1 and y/abs(y) == -1:
+                            tl_moves += 1
+
+                        if br_moves == 7:
+                            s.write(bytes('m,8/8\n', 'utf-8'))
+                            time.sleep(0.03)
+                            br_moves = 0
+                        elif bl_moves == 7:
+                            s.write(bytes('m,-8/8\n', 'utf-8'))
+                            time.sleep(0.03)
+                            bl_moves = 0
+                        elif tr_moves == 7:
+                            s.write(bytes('m,8/-8\n', 'utf-8'))
+                            time.sleep(0.03)
+                            tr_moves = 0
+                        elif tl_moves == 7:
+                            s.write(bytes('m,-8/-8\n', 'utf-8'))
+                            time.sleep(0.03)
+                            tl_moves = 0
+                    if index == 0:
+                        s.write(bytes('l\n', 'utf-8'))
+                        time.sleep(0.03)
+                    index += 1
+                    curr = letter
+                s.write(bytes('n\n', 'utf-8'))
+                time.sleep(0.03)
+            print("Completed!")
+            break

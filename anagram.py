@@ -1,7 +1,7 @@
 import serial
 import time
 import json
-s = serial.Serial(port='/dev/cu.usbmodemHIDGD1', baudrate=115200, timeout=0.1)
+s = serial.Serial(port='/dev/cu.usbmodemHIDGD1', baudrate=115200, timeout=2)
 
 def RemoveFromList(thelist, val):
     return [value for value in thelist if value != val]
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             list_all = sorted(list_all, key=len)
             list_all = [item for item in list_all if len(item)>=3]
             list_all = list(reversed(list_all))
-            print(list_all)
+            #print(list_all)
 
             chars = [*command]
             multi = []
@@ -99,8 +99,8 @@ if __name__ == "__main__":
                         multi_list.append(letter_inst)
 
             p = 0
+            ind = 0
             for word in list_all:
-                ind = 0
                 print(word)
                 for char in word:
                     letter_count = word.count(char)
@@ -112,36 +112,41 @@ if __name__ == "__main__":
                         if multi_val[multi.index(char)] == 0:
                             letter_inst = [i for i,val in enumerate(chars) if val==char]
                             multi_val[multi.index(char)] = len(letter_inst)
-                    for cycle in range(abs((next_p - ind))):
+                    
+                    
+                    cycles = abs(next_p - ind)
+                    for cycle in range(cycles // 2):
+                        s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * 70) + '/0\n', 'utf-8'))
+                        time.sleep(0.02)
+                        cycles -= 2
+                    for cycle in range(cycles):
                         s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * 43) + '/0\n', 'utf-8'))
                         time.sleep(0.02)
                     ind = next_p
+                    time.sleep(0.02)
                     s.write(bytes('l\n', 'utf-8'))
                     time.sleep(0.02)
                     s.write(bytes('n\n', 'utf-8'))
                     time.sleep(0.02)
-                
-                for cycle in range(next_p):
-                    s.write(bytes('m,-43/0\n', 'utf-8'))
+
+                if ind == 0:
+                    s.write(bytes('m,43/0\n', 'utf-8'))
+                    ind = 1
                     time.sleep(0.02)
-                s.write(bytes('m,0/-42\n', 'utf-8'))
-                time.sleep(0.02)
+                elif ind == 5:
+                    s.write(bytes('m,-43/0\n', 'utf-8'))
+                    ind = 4
+                    time.sleep(0.02)
 
                 # Go click the enter
-                s.write(bytes('m,0/-70\n', 'utf-8'))
-                time.sleep(0.02)
-                s.write(bytes('m,50/0\n', 'utf-8'))
-                time.sleep(0.02)
+                s.write(bytes('m,0/-112\n', 'utf-8'))
+                time.sleep(0.05)
                 s.write(bytes('l\n', 'utf-8'))
                 time.sleep(0.08)
                 s.write(bytes('n\n', 'utf-8'))
-                time.sleep(0.02)
-                s.write(bytes('m,-50/0\n', 'utf-8'))
-                time.sleep(0.02)
-                s.write(bytes('m,0/70\n', 'utf-8'))
+                time.sleep(0.04)
+                s.write(bytes('m,0/112\n', 'utf-8'))
                 time.sleep(0.02)
 
-                s.write(bytes('m,0/42\n', 'utf-8'))
-                time.sleep(0.02)
             print("Completed!")
             break

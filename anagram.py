@@ -61,14 +61,26 @@ def words(letters):
         yield from map(''.join, permutations(letters, n))
 
 if __name__ == "__main__":
-    s.write(bytes('c,-127/110\n', 'utf-8'))
     s.write(bytes('n\n', 'utf-8'))
 
     while True:
-        command = input("Enter 'm' to re-position or the 6 letters with the format 'abcdef': ")
-        if command == 'm':
+        command = input("Enter 'm6' to re-position for 6 letters, 'm7' for 7 letters, or a string of 6-7 letters in the format 'abcdef' to begin solving: ")
+        if command == 'm6':
             s.write(bytes('c,-127/110\n', 'utf-8'))
-        elif len(command) == 6:
+        elif command == 'm7':
+            s.write(bytes('c,-127/107\n', 'utf-8'))
+            time.sleep(0.02)
+            s.write(bytes('m,-5/0\n', 'utf-8'))
+        elif len(command) == 6 or len(command) == 7:
+            move_len = 0
+            move_two = 0
+            if len(command) == 6:
+                move_len = 43
+                move_two = 70
+            elif len(command) == 7:
+                move_len = 39
+                move_two = 62
+
             all = set(words(command))
 
             list_all = []
@@ -116,11 +128,11 @@ if __name__ == "__main__":
                     
                     cycles = abs(next_p - ind)
                     for cycle in range(cycles // 2):
-                        s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * 70) + '/0\n', 'utf-8'))
+                        s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * move_two) + '/0\n', 'utf-8'))
                         time.sleep(0.02)
                         cycles -= 2
                     for cycle in range(cycles):
-                        s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * 43) + '/0\n', 'utf-8'))
+                        s.write(bytes('m,' + str(abs(next_p - ind)/(next_p - ind) * move_len) + '/0\n', 'utf-8'))
                         time.sleep(0.02)
                     ind = next_p
                     time.sleep(0.02)
@@ -130,12 +142,12 @@ if __name__ == "__main__":
                     time.sleep(0.02)
 
                 if ind == 0:
-                    s.write(bytes('m,43/0\n', 'utf-8'))
+                    s.write(bytes('m,' + str(move_len) + '0\n', 'utf-8'))
                     ind = 1
                     time.sleep(0.02)
-                elif ind == 5:
-                    s.write(bytes('m,-43/0\n', 'utf-8'))
-                    ind = 4
+                elif ind == len(command) - 1:
+                    s.write(bytes('m,' + str(-move_len) + '/0\n', 'utf-8'))
+                    ind -= 1
                     time.sleep(0.02)
 
                 # Go click the enter

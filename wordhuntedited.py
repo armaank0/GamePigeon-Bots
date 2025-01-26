@@ -118,7 +118,7 @@ def smooth_move(x, y, duration=dur):
         time.sleep(delay)
     mouse.position = (start_x + x, start_y + y)
     time.sleep(delay)
-
+#
 dist = 65.5 # mouse movement distance between cells; can be changed depending on the screen/cell size
 current = 0
 if __name__ == "__main__":

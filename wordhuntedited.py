@@ -127,6 +127,7 @@ if __name__ == "__main__":
         if len(command) == 19:
             start_time = time.time()
             mouse.position = (88.5, 444.5) # initial mouse position; can be changed depending on where the game is located
+                                           # currently set for when mirroring window is touching the top left of the screen
             time.sleep(0.1)
             mouse.click(Button.left, 1) # click to highlight the mirroring window
             map = "".join(command.split())

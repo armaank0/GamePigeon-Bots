@@ -1,9 +1,8 @@
 import json
-import serial
+from pynput.mouse import Button, Controller
 import time
 
-# Check that the port name matches
-s = serial.Serial(port='/dev/cu.usbmodemHIDGD1', baudrate=115200, timeout=0.1)
+mouse = Controller()
 
 class WordHunt:
     def __init__(self, board: list):
@@ -102,79 +101,73 @@ class WordHunt:
             word += self.board[letter_index]
         return word
 
+# speed of mouse movments and delays
+dur = 0.015 # faster than this value caused WordHunt to not register some inputs (during my testing)
 
+# smooth mouse movement to simulate moving the mouse
+def smooth_move(x, y, duration=dur):  
+    start_x, start_y = mouse.position
+    steps = 100
+    delay = duration / steps
+
+    for i in range(steps):
+        t = i / steps
+        x_pos = int(start_x + x*t)
+        y_pos = int(start_y + y*t)
+        mouse.position = (x_pos, y_pos)
+        time.sleep(delay)
+    mouse.position = (start_x + x, start_y + y)
+    time.sleep(delay)
+
+dist = 65.5 # mouse movement distance between cells; can be changed depending on the screen/cell size
 current = 0
 if __name__ == "__main__":
-    s.write(bytes('w,26/31\n', 'utf-8'))
-    s.write(bytes('n\n', 'utf-8'))
-
     while True:
-        command = input("Enter 'm' to re-position or the 4 rows of letters with the format 'abcd efgh ijkl mnop': ")
-        if command == 'm':
-            s.write(bytes('w,26/31\n', 'utf-8'))
-            s.write(bytes('n\n', 'utf-8'))
-        elif len(command) == 19:
+        command = input("Enter the 4 rows of letters with the format 'abcd efgh ijkl mnop': ")
+        if len(command) == 19:
+            start_time = time.time()
+            mouse.position = (88.5, 444.5) # initial mouse position; can be changed depending on where the game is located
+            time.sleep(0.1)
+            mouse.click(Button.left, 1) # click to highlight the mirroring window
             map = "".join(command.split())
             board1 = WordHunt(list(map))
 
+            words = 0
             curr = 0
-            br_moves = 0
-            bl_moves = 0
-            tr_moves = 0
-            tl_moves = 0
             for word in board1.sorted:
                 index = 0
+                if time.time() - start_time > 80: # in case there are too many words this will terminate the program at max time
+                    print("Time limit exceeded!")
+                    break
                 for letter in board1.answers[word]:
                     x = (letter % 4) - (curr % 4)
                     y = (letter // 4) - (curr // 4)
                     if abs(x) >= 2 or y == 0:
                         for i in range(abs(x)):
-                            s.write(bytes('m,' + str((x/abs(x)) * 47) + '/' + '0' + '\n', 'utf-8'))
-                            time.sleep(0.03)
+                            smooth_move(x/abs(x)*dist, 0)
+                            time.sleep(dur)
                         if abs(y) == 1:
-                            s.write(bytes('m,' + '0' + '/' + str(((y/abs(y)) * 47)) + '\n', 'utf-8'))
-                            time.sleep(0.03)
+                            smooth_move(0, y/abs(y)*dist)
+                            time.sleep(dur)
                     if abs(y) >= 2 or x == 0:
                         for i in range(abs(y)):
-                            s.write(bytes('m,' + '0' + '/' + str(((y/abs(y)) * 47)) + '\n', 'utf-8'))
-                            time.sleep(0.03)
+                            smooth_move(0, y/abs(y)*dist)
+                            time.sleep(dur)
                         if abs(x) == 1:
-                            s.write(bytes('m,' + str((x/abs(x)) * 47) + '/' + '0' + '\n', 'utf-8'))
-                            time.sleep(0.03)
+                            smooth_move(x/abs(x)*65.5, 0)
+                            time.sleep(dur)
                     if abs(x) == 1 and abs(y) == 1:
-                        s.write(bytes('m,' + str((x/abs(x)) * 42) + '/' + str(((y/abs(y)) * 42)) + '\n', 'utf-8'))
-                        time.sleep(0.03)
-                        if x/abs(x) == 1 and y/abs(y) == 1:
-                            br_moves += 1
-                        elif x/abs(x) == -1 and y/abs(y) == 1:
-                            bl_moves += 1
-                        elif x/abs(x) == 1 and y/abs(y) == -1:
-                            tr_moves += 1
-                        elif x/abs(x) == -1 and y/abs(y) == -1:
-                            tl_moves += 1
-
-                        if br_moves == 7:
-                            s.write(bytes('m,8/8\n', 'utf-8'))
-                            time.sleep(0.03)
-                            br_moves = 0
-                        elif bl_moves == 7:
-                            s.write(bytes('m,-8/8\n', 'utf-8'))
-                            time.sleep(0.03)
-                            bl_moves = 0
-                        elif tr_moves == 7:
-                            s.write(bytes('m,8/-8\n', 'utf-8'))
-                            time.sleep(0.03)
-                            tr_moves = 0
-                        elif tl_moves == 7:
-                            s.write(bytes('m,-8/-8\n', 'utf-8'))
-                            time.sleep(0.03)
-                            tl_moves = 0
+                        smooth_move(x/abs(x)*dist, y/abs(y)*dist)
+                        time.sleep(dur)
                     if index == 0:
-                        s.write(bytes('l\n', 'utf-8'))
-                        time.sleep(0.03)
+                        mouse.press(Button.left)
+                        time.sleep(dur)
                     index += 1
                     curr = letter
-                s.write(bytes('n\n', 'utf-8'))
+                mouse.release(Button.left)
                 time.sleep(0.03)
-            print("Completed!")
+                print(f"Completed word: {word} #{words}") # this line isn't necessary
+                words += 1
+                
+            print(f"Completed! Total words: {words}") # some words are not recognized by the game, so not 100% accurate
             break
